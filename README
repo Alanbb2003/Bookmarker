@@ -1,0 +1,14 @@
+# file: README (optional - terminal instructions)
+1. Ensure XAMPP MySQL is running and create DB:
+   - Go to http://localhost/phpmyadmin
+   - Create database named `bookmarker`
+
+2. Install dependencies:
+   npm install
+
+3. Start server:
+   npm run start
+   or for dev (auto-reload):
+   npm run test
+
+4. Open http://localhost:3000

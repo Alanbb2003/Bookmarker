@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookmarker</title>
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <h1>BookMarker</h1>
+    <form id="form">
+        <input type="text" id="title" placeholder="Title">
+        <input type="text" id="url" placeholder="https://example.com">
+        <button>Add</button>
+    </form>
+
+    <ul id="list"></ul>
+
+    <script>
+        const form = document.getElementById("form");
+        const list = document.getElementById("list");
+        const title = document.getElementById("title");
+        const url = document.getElementById("url");
+
+        async function load() {
+            try {
+                const res = await fetch("/api/bookmarks");
+                const data = await res.json();
+                list.innerHTML = data.map(b => `
+                    <li>
+                        <strong>${escapeHtml(b.title)}</strong>
+                        - <a href ="${escapeAttr(b.url)}" target = "_blank"> ${escapeHtml(b.url)}</a>
+                        <button data-id="${b.id}">Delete</button>
+                    </li>`
+                ).join("");
+                list.querySelectorAll("button[data-id]").forEach(btn => {
+                    btn.addEventListener("click", async () => {
+                        await fetch("/api/bookmarks/" + btn.dataset.id, { method: "DELETE" });
+                        load();
+                    });
+                });
+            } catch (err) {
+                console.log(err);
+            }
+        }
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            await fetch("/api/bookmarks", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title: title.value.trim(), url: url.value.trim() })
+            });
+            form.reset();
+            load();
+        }
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        }
+        function escapeAttr(s) {
+            return s.replace(/"/g, '&quot;');
+        }
+
+        load();
+    </script>
+</body>
+
+</html>
